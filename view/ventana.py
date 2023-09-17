@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import messagebox
+from controller.analizador import Analizador
 
 class Ventana_Principal(tk.Tk):
     def __init__(self):
@@ -29,6 +30,9 @@ class Ventana_Principal(tk.Tk):
 
         #Activar la funcionalidad del cmb
         self.cmb.bind("<<ComboboxSelected>>", self.accion_cmb)
+
+        #Activar funcionalidad del analizador
+        self.btnAnalizar.bind("<Button-1>", self.analizador_Lex)
 
 
     def mostrar_Componentes(self):
@@ -135,3 +139,15 @@ class Ventana_Principal(tk.Tk):
 
             print(f"Error: {e}")
             messagebox.showerror("Error","Se produjo un error al intentar guardar el archivo")
+
+    def analizador_Lex(self, event):
+
+        if self.file_path:
+
+            texto = self.txtArea.get(1.0, tk.END)  # Obtener el contenido del txtArea
+            scanner = Analizador(texto)
+            scanner.analizar()
+            scanner.re_operar()
+
+        else:
+            messagebox.showerror("Error", "Abre un archivo JSON antes de analizar")
