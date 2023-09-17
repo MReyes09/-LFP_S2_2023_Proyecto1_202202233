@@ -14,7 +14,7 @@ class Trigonometrica(Operador):
 
         if self.i is not None:
 
-            i_valor = self.i.operar(tree)
+            i_valor = o.radians(self.i.operar(tree))
 
         if self.t.operar(tree) == "seno":
 

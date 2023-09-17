@@ -2,6 +2,7 @@ from controller.op_Aritmetica import *
 from controller.op_Trigonometrica import *
 from controller.lexema import *
 from controller.numero import *
+from controller.error import *
 
 
 class Analizador():
@@ -12,6 +13,7 @@ class Analizador():
         self.c = 1
         self.tokens = []
         self.lexemas_List = []
+        self.errores_List = []
         self.accion = []
 
     def generate_Lexemas_List(self):
@@ -54,11 +56,11 @@ class Analizador():
         self.lexemas_List = list(word_Reserved.values())
 
     def analizar(self):
+
         f = self.f
         c = self.c
         tokens = self.tokens
         cadena = self.texto
-        lexema = ""
         puntero = 0
 
         while cadena:
@@ -68,14 +70,16 @@ class Analizador():
             ascii = ord(caracter)
 
             if ascii == 34:
+
                 # concateno todo lo que hay en " "
                 lexema, cadena = self.find_Str(cadena[puntero:])
 
                 if lexema and cadena:
+
                     lex = Lexema(lexema, f, c)
                     c += 1
-                    tokens.append(lex)
                     c += len(lexema) + 1
+                    tokens.append(lex)
                     puntero = 0
 
             elif caracter.isdigit():
@@ -91,7 +95,7 @@ class Analizador():
 
             elif ascii == 91 or ascii == 93:
 
-                char = Lexema(lexema, f, c)
+                char = Lexema(caracter, f, c)
                 tokens.append(char)
                 c += 1
                 cadena = cadena[1:]
@@ -110,19 +114,24 @@ class Analizador():
                 f += 1
                 c = 1
 
-            else:
+            elif ascii == 32:
 
                 cadena = cadena[1:]
                 puntero = 0
-                c = 1
+                c += 1
 
-        for lexema in tokens:
-            print(lexema)
+            else:
+
+                if ascii not in (44, 46, 58, 91, 93, 123, 125):
+
+                    self.errores_List.append(Error(caracter, "Error lexico", c, f))
+
+                cadena = cadena[1:]
+                puntero = 0
+                c += 1
 
     def find_Str(self, texto):
-        f = self.f
-        c = self.c
-        tokens = self.tokens
+
         lexema = ''
         clave = ''
 
@@ -131,7 +140,7 @@ class Analizador():
             ascii = ord(caracter)
             clave += caracter
 
-            if ascii == 34:
+            if ascii == 34: # CARACTER = "
 
                 return lexema, texto[len(clave):]
 
@@ -155,7 +164,11 @@ class Analizador():
             if ascii == 46:
                 verificar = True
 
-            if ascii == 34 or ascii == 32 or ascii == 10 or ascii == 9 or ascii == 44:
+            if ascii == 46 or caracter.isdigit():
+
+                numero += caracter
+
+            else:
 
                 if verificar:
 
@@ -164,10 +177,6 @@ class Analizador():
                 else:
 
                     return int(numero), texto[len(clave) - 1:]
-
-            else:
-
-                numero += caracter
 
         return None, None
 
@@ -208,7 +217,7 @@ class Analizador():
             elif operacion and n1 and operacion.operar(None) == ('seno' or 'coseno' or 'tangente'):
 
                 return Trigonometrica(n1, operacion, f"Inicio: {operacion.get_F()}: {operacion.get_C()}",
-                                      f"Fin: {n2.get_F()}: {n2.get_C()}")
+                                      f"Fin: {n1.get_F()}: {n1.get_C()}")
 
         return None
 
@@ -226,7 +235,12 @@ class Analizador():
 
                 break
 
+        resultados = []
+        contador = 1
+
         for instrucciones in self.accion:
 
-            print(instrucciones.operar(None))
+            resultados.append(f"Operacion{contador}: {instrucciones.operar(None)}")
+            contador += 1
 
+        return resultados

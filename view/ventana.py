@@ -3,15 +3,16 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter import messagebox
 from controller.analizador import Analizador
+import json
 
 class Ventana_Principal(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Análisis Léxico")
         self.file_path = None
-        self.navbar = tk.Frame(self, bg="#1BF1E1") #CONTENEDOR DE LOS BOTONES Y CMB
+        self.navbar = tk.Frame(self, bg="#1BF1E1")  # CONTENEDOR DE LOS BOTONES Y CMB
         self.cmb = ttk.Combobox(self.navbar, state="readonly",
-                                     values=["Opciones", "Abrir", "Guardar", "Guardar Como", "Salir"])
+                                values=["Opciones", "Abrir", "Guardar", "Guardar Como", "Salir"])
         self.btnAnalizar = ttk.Button(self.navbar, text="Analizar")
         self.btnErrores = ttk.Button(self.navbar, text="Errores")
         self.btnReporte = ttk.Button(self.navbar, text="Reporte")
@@ -20,32 +21,35 @@ class Ventana_Principal(tk.Tk):
         self.line_numbers = tk.Text(self.txtContainer, width=4, height=350, bg="#F0F0F0", state="disabled")
         self.geometry("1300x550")
 
-        #Esta funcion me va a mostrar los componentes en la ventana
+        # Esta funcion me va a mostrar los componentes en la ventana
         self.mostrar_Componentes()
 
-        #Activa la funcionalidad de la numeracion
+        # Activa la funcionalidad de la numeracion
         self.txtArea.bind("<KeyRelease>", self.actualizar_numeracion_lineas)
         self.txtArea.bind("<MouseWheel>", self.actualizar_numeracion_lineas_scroll)
         self.actualizar_numeracion_lineas(None)
 
-        #Activar la funcionalidad del cmb
+        # Activar la funcionalidad del cmb
         self.cmb.bind("<<ComboboxSelected>>", self.accion_cmb)
 
-        #Activar funcionalidad del analizador
+        # Activar funcionalidad del analizador
         self.btnAnalizar.bind("<Button-1>", self.analizador_Lex)
 
+        self.scanner = None
+        # Activar funcionalidad del btnError
+        self.btnErrores.bind("<Button-1>", self.generar_JSON_Errores)
 
     def mostrar_Componentes(self):
 
-        self.navbar.pack(fill = tk.X) # NAVBAR SIMULADO
+        self.navbar.pack(fill=tk.X)  # NAVBAR SIMULADO
 
         self.cmb.set("Opciones")
-        self.cmb.pack(side = tk.LEFT, padx=5, pady=10)
-        self.btnAnalizar.pack(side = tk.LEFT, padx=5, pady=10)
+        self.cmb.pack(side=tk.LEFT, padx=5, pady=10)
+        self.btnAnalizar.pack(side=tk.LEFT, padx=5, pady=10)
         self.btnErrores.pack(side=tk.LEFT, padx=5, pady=10)
         self.btnReporte.pack(side=tk.LEFT, padx=5, pady=10)
 
-        self.txtContainer.pack(padx = 50, pady = 50)
+        self.txtContainer.pack(padx=50, pady=50)
         self.txtContainer.configure(highlightbackground="black", highlightthickness=2)
         self.line_numbers.pack(side="left", fill="y")
         self.txtArea.pack(fill=tk.BOTH, expand=True)
@@ -71,7 +75,7 @@ class Ventana_Principal(tk.Tk):
         dependiendo de cual se escoja
         """
 
-        selected_option = self.cmb.get() #Se obtiene el valor actual del cmb
+        selected_option = self.cmb.get()  # Se obtiene el valor actual del cmb
 
         if selected_option == "Abrir":
             # Realizar acción correspondiente a "Abrir"
@@ -79,11 +83,10 @@ class Ventana_Principal(tk.Tk):
             file_path = self.file_path
 
             if file_path:
+                with open(file_path, 'r') as file:
+                    content = file.read()  # Transforma el contenido del archivo en un Str
 
-                with open(file_path,'r') as file:
-                    content = file.read() #Transforma el contenido del archivo en un Str
-
-                self.txtArea.delete(1.0,tk.END)
+                self.txtArea.delete(1.0, tk.END)
                 self.txtArea.insert(tk.END, content)
                 self.actualizar_numeracion_lineas(None)
 
@@ -127,7 +130,6 @@ class Ventana_Principal(tk.Tk):
             file_path = filedialog.asksaveasfilename(filetypes=[("Archivos JSON", "*.json")], defaultextension=".json")
 
             if file_path:
-
                 self.file_path = file_path  # Actualiza la file_path con la nueva ubicación
                 with open(file_path, 'w') as file:
                     content = self.txtArea.get(1.0, tk.END)  # Obtener el contenido del txtArea
@@ -138,16 +140,70 @@ class Ventana_Principal(tk.Tk):
         except Exception as e:
 
             print(f"Error: {e}")
-            messagebox.showerror("Error","Se produjo un error al intentar guardar el archivo")
+            messagebox.showerror("Error", "Se produjo un error al intentar guardar el archivo")
 
     def analizador_Lex(self, event):
 
         if self.file_path:
 
-            texto = self.txtArea.get(1.0, tk.END)  # Obtener el contenido del txtArea
-            scanner = Analizador(texto)
-            scanner.analizar()
-            scanner.re_operar()
+            try:
+
+                texto = self.txtArea.get(1.0, tk.END)  # Obtener el contenido del txtArea
+                self.scanner = Analizador(texto)
+                self.scanner.analizar()
+                resultados = self.scanner.re_operar()
+                mensaje = ""
+
+                for op in resultados:
+                    mensaje += op + "\n"
+
+                messagebox.showinfo("Resultados", f"{mensaje}")
+
+            except Exception as e:
+
+                print(f"Error: {e}")
+                messagebox.showerror("Erro", "Ups, ha ocurrido un error al analizar el texto")
 
         else:
             messagebox.showerror("Error", "Abre un archivo JSON antes de analizar")
+
+    def generar_JSON_Errores(self, event):
+
+        scan: Analizador = self.scanner
+
+        if scan:
+
+            try:
+
+                body = {}
+                body["errores"] = []
+                contador = 1
+
+                for error in scan.errores_List:
+                    lexema = error.lexema
+                    tipo = error.tipo
+                    c = error.col
+                    f = error.fil
+                    body["errores"].append({
+                        'No': contador,
+                        'descripcion': {
+                            'lexema': lexema,
+                            'tipo': tipo,
+                            'columna': c,
+                            'fila': f
+                        }
+                    })
+                    contador += 1
+
+                with open('Errores_202202233.json', 'w') as file:
+                    json.dump(body, file, indent=3)
+
+                messagebox.showinfo("JSON de errores creado","El archivo JSON se ha creado correctamente")
+
+            except Exception as e:
+
+                messagebox.showerror("Error", "Ups, hubo un error al intentar crear el archivo JSON")
+                print(f"Error: {e}")
+        else:
+
+            messagebox.showwarning("¡Cuidado!", "Debes de analizar el texto antes de usar esta funcion")
