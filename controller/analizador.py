@@ -82,7 +82,7 @@ class Analizador():
                     tokens.append(lex)
                     puntero = 0
 
-            elif caracter.isdigit():
+            elif caracter.isdigit() or ascii == 45:
 
                 token, cadena = self.find_Number(cadena)
 
@@ -164,7 +164,7 @@ class Analizador():
             if ascii == 46:
                 verificar = True
 
-            if ascii == 46 or caracter.isdigit():
+            if ascii in (46, 45) or caracter.isdigit():
 
                 numero += caracter
 
