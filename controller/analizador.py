@@ -12,48 +12,48 @@ class Analizador():
         self.f = 1
         self.c = 1
         self.tokens = []
-        self.lexemas_List = []
+        # self.lexemas_List = []
         self.errores_List = []
         self.accion = []
 
-    def generate_Lexemas_List(self):
+    # def generate_Lexemas_List(self):
+    #
+    #     word_Reserved = {
+    #         # VALORES
+    #         'ROperacion': 'operacion',
+    #         'RValor1': 'valor1',
+    #         'RValor2': 'valor2',
+    #
+    #         # OPERADORES
+    #         'RSuma': 'suma',
+    #         'RResta': 'resta',
+    #         'RMultiplicacion': 'multiplicacion',
+    #         'RDivision': 'division',
+    #         'RPotencia': 'potencia',
+    #         'RRaiz': 'raiz',
+    #         'RInverso': 'inverso',
+    #         'RSeno': 'seno',
+    #         'RCoseno': 'coseno',
+    #         'RTangente': 'tangente',
+    #         'RMod': 'mod',
+    #
+    #         # CONFIGURACIONES
+    #         'RTexto': 'texto',
+    #         'RFondo': 'fondo',
+    #         'RFuente': 'fuente',
+    #         'RForma': 'forma',
+    #
+    #         # CARACTERES ESPECIALES
+    #         'Coma': ',',
+    #         'Punto': '.',
+    #         '2Punts': ':',
+    #         'CorI': '[',
+    #         'CorD': ']',
+    #         'LlaveI': '{',
+    #         'LLaveD': '}',
+    #     }
 
-        word_Reserved = {
-            # VALORES
-            'ROperacion': 'operacion',
-            'RValor1': 'valor1',
-            'RValor2': 'valor2',
-
-            # OPERADORES
-            'RSuma': 'suma',
-            'RResta': 'resta',
-            'RMultiplicacion': 'multiplicacion',
-            'RDivision': 'division',
-            'RPotencia': 'potencia',
-            'RRaiz': 'raiz',
-            'RInverso': 'inverso',
-            'RSeno': 'seno',
-            'RCoseno': 'coseno',
-            'RTangente': 'tangente',
-            'RMod': 'mod',
-
-            # CONFIGURACIONES
-            'RTexto': 'texto',
-            'RFondo': 'fondo',
-            'RFuente': 'fuente',
-            'RForma': 'forma',
-
-            # CARACTERES ESPECIALES
-            'Coma': ',',
-            'Punto': '.',
-            '2Punts': ':',
-            'CorI': '[',
-            'CorD': ']',
-            'LlaveI': '{',
-            'LLaveD': '}',
-        }
-
-        self.lexemas_List = list(word_Reserved.values())
+        # self.lexemas_List = list(word_Reserved.values())
 
     def analizar(self):
 
